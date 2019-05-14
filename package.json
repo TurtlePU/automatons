@@ -1,0 +1,10 @@
+{
+  "name": "automatons",
+  "version": "0.0.1",
+  "description": "cell automatons for fun",
+  "private": true,
+  "scripts": {
+  },
+  "author": "Turtle P.U.",
+  "license": "MIT"
+}
