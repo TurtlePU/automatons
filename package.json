@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "description": "cell automatons for fun",
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "serve": "parcel src/index.html",
+    "start": "parcel build src/index.html"
+  },
   "author": "Turtle P.U.",
   "license": "MIT",
   "dependencies": {
