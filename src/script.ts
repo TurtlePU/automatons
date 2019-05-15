@@ -1,15 +1,13 @@
 ///<reference path='png.d.ts'/>
 
 import * as PIXI from 'pixi.js';
-import CellAutomaton from './lib/automaton';
+import { CellAutomaton2D, Grid2D, Position2D } from './lib/automaton/export';
 
-import cell_path from '../assets/cell.png';
-
-const ticks_per_second = 60;
+const ticks_per_second = 5;
 
 window.onload = async () => {
     init_automaton();
-    await init_app();
+    init_app();
     init_ui();
     window.setInterval(tick, 1000 / ticks_per_second);
 }
@@ -21,31 +19,38 @@ const app_height = window.innerHeight;
 const width = Math.floor(app_width / cell_size);
 const height = Math.floor(app_height / cell_size);
 
-var automaton: CellAutomaton<boolean>;
+var automaton: CellAutomaton2D<boolean>;
 
 function init_automaton() {
-    automaton = new CellAutomaton(rule);
-    automaton.grid = new Array(width).fill(
-        new Array(height).fill(false)
+    let grid = new Grid2D<boolean>(
+        new Array(width).fill([])
+        .map(() =>
+            new Array(height).fill(false)
+            .map(() => Math.random() < 0.3)
+        )
     );
+    automaton = new CellAutomaton2D<boolean>(grid, rule);
 }
 
-function rule(this: CellAutomaton<boolean>, i: number, j: number) {
-    if (this.grid[i][j]) {
-        if (j + 1 < this.grid[i].length && !this.grid[i][j + 1]) {
+function rule(this: CellAutomaton2D<boolean>, pos: Position2D) {
+    if (this.grid.get(pos)) {
+        let below = { i: pos.i, j: pos.j + 1 };
+        if (this.grid.has(below) && !this.grid.get(below)) {
             return false;
         }
     } else {
-        if (j - 1 >= 0 && this.grid[i][j - 1]) {
+        let above = { i: pos.i, j: pos.j - 1 };
+        if (this.grid.has(above) && this.grid.get(above)) {
             return true;
         }
     }
-    return this.grid[i][j];
+    return this.grid.get(pos);
 }
 
 var app: PIXI.Application;
+var graphics: PIXI.Graphics;
 
-async function init_app() {
+function init_app() {
     app = new PIXI.Application({
         width: app_width,
         height: app_height,
@@ -53,64 +58,41 @@ async function init_app() {
     });
     document.body.appendChild(app.view);
 
-    return new Promise((resolve, reject) => {
-        app.loader
-        .add(cell_path)
-        .once('error', reject)
-        .load(resolve);
-    });
+    graphics = new PIXI.Graphics();
+    graphics.beginFill(0xFFFFFF);
+    app.stage.addChild(graphics);
 }
 
 function init_ui() {
     app.view.onclick = (event: MouseEvent) => {
-        let x = Math.floor(event.clientX / cell_size);
-        let y = Math.floor(event.clientY / cell_size);
+        let i = Math.floor(event.clientX / cell_size);
+        let j = Math.floor(event.clientY / cell_size);
 
         console.log(event.clientX, event.clientY);
-        console.log(x, y);
+        console.log(i, j);
 
-        if (automaton.grid[x][y]) {
-            return;
-        }
-        automaton.grid[x][y] = true;
-
-        let sprite = new PIXI.Sprite(
-            app.loader.resources[cell_path].texture
-        );
-        sprite.anchor = new PIXI.Point(0.5, 0.5);
-        sprite.x = (x + 0.5) * cell_size;
-        sprite.y = (y + 0.5) * cell_size;
-        sprite.width = cell_size;
-        sprite.height = cell_size;
-        app.stage.addChild(sprite);
+        automaton.grid.set({ i, j }, true);
+        draw();
     }
 }
 
 function tick() {
     automaton.tick();
-    let coords = automaton.grid.map((col, i) => {
-        return {
-            i,
-            col: col.map(
-                (val, j) => val ? j : -1
-            ).filter(val => val != -1)
-        };
-    }).filter(val => val.col.length != 0);
-    if (coords.length == 0) {
-        return;
-    }
+    draw();
+}
 
-    let i = 0, j = 0;
-    for (let child of app.stage.children) {
-        child.x = (coords[i].i + 0.5) * cell_size;
-        child.y = (coords[i].col[j] + 0.5) * cell_size;
-        ++j;
-        if (j == coords[i].col.length) {
-            ++i;
-            j = 0;
-            if (i == coords.length) {
-                break;
+function draw() {
+    graphics.clear();
+    automaton.grid.data.forEach((row, i) => {
+        row.forEach((val, j) => {
+            if (val) {
+                graphics.drawRect(
+                    i * cell_size,
+                    j * cell_size,
+                    cell_size,
+                    cell_size
+                );
             }
-        }
-    }
+        });
+    });
 }
