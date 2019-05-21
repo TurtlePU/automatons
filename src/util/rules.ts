@@ -1,5 +1,9 @@
 import { CellAutomaton2D, Position2D } from "../lib/automaton/dim-2";
 
+export function id(this: CellAutomaton2D<number>, pos: Position2D) {
+    return this.get(pos);
+}
+
 export function sand(this: CellAutomaton2D<number>, pos: Position2D) {
     let up_pos = [pos[0], pos[1] - 1] as Position2D;
     let down_pos = [pos[0], pos[1] + 1] as Position2D;

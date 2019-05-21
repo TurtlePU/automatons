@@ -26,10 +26,10 @@ function init_automaton() {
         new Array(width).fill([]).map((_, i) =>
             new Array(height).fill(0).map((_, j) => {
                 let val = Math.pow(i / 10, j / 10);
-                return (val - Math.floor(val)) * Math.random();
+                return (val - Math.floor(val))// * Math.random();
             })
         ),
-        Rules.gravity
+        Rules.id
     );
 }
 
@@ -59,9 +59,9 @@ function init_ui() {
 
 function tick() {
     automaton.tick();
-    if (automaton.stable) {
-        automaton.rule = Rules.sand;
-    }
+//    if (automaton.stable) {
+//        automaton.rule = Rules.sand;
+//    }
     draw();
 }
 
