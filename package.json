@@ -4,8 +4,10 @@
   "description": "cell automatons for fun",
   "private": true,
   "scripts": {
-    "serve": "parcel src/index.html",
-    "start": "parcel build src/index.html"
+    "clear-serve": "rm -rf dist",
+    "serve": "npm run clear-serve && parcel src/index/index.html",
+    "clear-build": "rm -rf build",
+    "build": "npm run clear-build && parcel build src/index/index.html --out-dir build --log-level 1 --no-source-maps --experimental-scope-hoisting"
   },
   "author": "Turtle P.U.",
   "license": "MIT",
